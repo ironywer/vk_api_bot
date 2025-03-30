@@ -1,6 +1,9 @@
 package service
 
 import (
+	"errors"
+	"strings"
+
 	"VK_API_BOT/internal/model"
 	"VK_API_BOT/internal/storage"
 
@@ -23,4 +26,33 @@ func CreatePoll(userID, question string, options []string) (string, error) {
 		return "", err
 	}
 	return id, nil
+}
+
+func CastVote(userID, pollID, option string) error {
+	poll, err := storage.GetPoll(pollID)
+	if err != nil {
+		return err
+	}
+
+	if poll.IsClosed {
+		return errors.New("poll is closed")
+	}
+
+	if _, voted := poll.Votes[userID]; voted {
+		return errors.New("user has already voted")
+	}
+
+	valid := false
+	for _, opt := range poll.Options {
+		if strings.EqualFold(opt, option) {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return errors.New("invalid option")
+	}
+
+	poll.Votes[userID] = option
+	return storage.UpdatePoll(poll)
 }

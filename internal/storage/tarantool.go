@@ -3,7 +3,8 @@ package storage
 import (
 	"log"
 	"os"
-
+	"sync"
+	"errors"
 	"VK_API_BOT/internal/model"
 
 	"github.com/tarantool/go-tarantool"
@@ -23,7 +24,34 @@ func init() {
 	}
 }
 
-func SavePoll(p model.Poll) error {
-	_, err := conn.Insert("polls", []interface{}{p.ID, p.CreatorID, p.Question, p.Options, p.Votes, p.IsClosed})
-	return err
+var (
+	pollStore  = make(map[string]model.Poll)
+	storeMutex sync.Mutex
+)
+
+func SavePoll(poll model.Poll) error {
+	storeMutex.Lock()
+	defer storeMutex.Unlock()
+
+	pollStore[poll.ID] = poll
+	return nil
+}
+
+func GetPoll(id string) (model.Poll, error) {
+	storeMutex.Lock()
+	defer storeMutex.Unlock()
+
+	poll, ok := pollStore[id]
+	if !ok {
+		return model.Poll{}, errors.New("poll not found")
+	}
+	return poll, nil
+}
+
+func UpdatePoll(poll model.Poll) error {
+	storeMutex.Lock()
+	defer storeMutex.Unlock()
+
+	pollStore[poll.ID] = poll
+	return nil
 }

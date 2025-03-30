@@ -33,6 +33,21 @@ func VoteHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		writeJSON(w, fmt.Sprintf("Poll created with ID: %s", id))
+	case "cast":
+		if len(args) < 3 {
+			writeJSON(w, "Usage: /vote cast <poll_id> <option>")
+			return
+		}
+		pollID := args[1]
+		option := strings.Join(args[2:], " ")
+
+		err := service.CastVote(userID, pollID, option)
+		if err != nil {
+			writeJSON(w, fmt.Sprintf("Failed to cast vote: %s", err.Error()))
+			return
+		}
+
+		writeJSON(w, "Your vote has been recorded.")
 	default:
 		writeJSON(w, "Unknown command")
 	}
