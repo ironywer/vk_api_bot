@@ -1,15 +1,16 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
 	"VK_API_BOT/internal/handler"
+	"VK_API_BOT/internal/middleware"
+	"net/http"
 )
 
 func main() {
-	http.HandleFunc("/vote", handler.VoteHandler)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/vote", handler.VoteHandler)
 
-	log.Println("Server running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	logged := middleware.Logger(mux)
+
+	http.ListenAndServe(":8080", logged)
 }
