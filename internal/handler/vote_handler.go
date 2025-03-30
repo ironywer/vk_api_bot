@@ -48,6 +48,18 @@ func VoteHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		writeJSON(w, "Your vote has been recorded.")
+	case "results":
+		if len(args) < 2 {
+			writeJSON(w, "Usage: results <pollID>")
+			return
+		}
+		pollID := args[1]
+		text, err := service.GetPollResults(pollID)
+		if err != nil {
+			writeJSON(w, "Failed to get poll results: "+err.Error())
+			return
+		}
+		writeJSON(w, text)
 	default:
 		writeJSON(w, "Unknown command")
 	}

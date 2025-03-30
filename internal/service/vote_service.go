@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"strings"
+	"fmt"
 
 	"VK_API_BOT/internal/model"
 	"VK_API_BOT/internal/storage"
@@ -55,4 +56,29 @@ func CastVote(userID, pollID, option string) error {
 
 	poll.Votes[userID] = option
 	return storage.UpdatePoll(poll)
+}
+
+func GetPollResults(pollID string) (string, error) {
+	poll, err := storage.GetPoll(pollID)
+	if err != nil {
+		return "", err
+	}
+
+	if len(poll.Votes) == 0 {
+		return "No votes yet.", nil
+	}
+
+	results := make(map[string]int)
+	for _, vote := range poll.Votes {
+		results[vote]++
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Results for \"%s\":\n", poll.Question))
+	for _, option := range poll.Options {
+		count := results[option]
+		sb.WriteString(fmt.Sprintf("- %s: %d\n", option, count))
+	}
+
+	return sb.String(), nil
 }
