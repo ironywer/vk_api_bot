@@ -32,7 +32,12 @@ func VoteHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		writeJSON(w, fmt.Sprintf("Poll created with ID: %s", id))
+		pollText := fmt.Sprintf("Poll created with ID: %s\nQuestion: %s\nOptions:\n", id, question)
+		for i, opt := range options {
+			pollText += fmt.Sprintf("%d. %s\n", i+1, opt)
+		}
+		writeJSON(w, pollText)
+		
 	case "cast":
 		if len(args) < 3 {
 			writeJSON(w, "Usage: /vote cast <poll_id> <option>")
