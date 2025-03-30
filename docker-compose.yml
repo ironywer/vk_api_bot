@@ -1,0 +1,48 @@
+version: "3.8"
+services:
+  bot:
+    container_name: bot
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - TARANTOOL_HOST=tarantool
+    depends_on:
+      - tarantool
+
+  tarantool:
+    image: tarantool/tarantool
+    restart: always
+    ports:
+      - "3301:3301"
+    volumes:
+      - ./internal/storage/init.lua:/opt/tarantool/init.lua
+    command: tarantool /opt/tarantool/init.lua
+
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_USER: mmuser
+      POSTGRES_PASSWORD: mmuser_password
+      POSTGRES_DB: mattermost
+    volumes:
+      - mattermost_pgdata:/var/lib/postgresql/data
+
+  mattermost:
+    build:
+      context: .
+      dockerfile: Dockerfile.mattermost
+    ports:
+      - "8065:8065"
+    volumes:
+      - ./mattermost/config:/mattermost/config
+      - ./mattermost/data:/mattermost/data
+    depends_on:
+      - db
+
+
+
+volumes:
+  mattermost_data:
+  mattermost_pgdata:
