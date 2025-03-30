@@ -82,3 +82,34 @@ func GetPollResults(pollID string) (string, error) {
 
 	return sb.String(), nil
 }
+
+func ClosePoll(userID, pollID string) error {
+	poll, err := storage.GetPoll(pollID)
+	if err != nil {
+		return err
+	}
+
+	if poll.CreatorID != userID {
+		return errors.New("you are not the creator of this poll")
+	}
+
+	if poll.IsClosed {
+		return errors.New("poll is already closed")
+	}
+
+	poll.IsClosed = true
+	return storage.SavePoll(poll)
+}
+
+func DeletePoll(userID, pollID string) error {
+	poll, err := storage.GetPoll(pollID)
+	if err != nil {
+		return err
+	}
+
+	if poll.CreatorID != userID {
+		return errors.New("you are not the creator of this poll")
+	}
+
+	return storage.DeletePoll(pollID)
+}

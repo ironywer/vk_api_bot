@@ -55,3 +55,15 @@ func UpdatePoll(poll model.Poll) error {
 	pollStore[poll.ID] = poll
 	return nil
 }
+
+func DeletePoll(pollID string) error {
+	storeMutex.Lock()
+	defer storeMutex.Unlock()
+
+	if _, exists := pollStore[pollID]; !exists {
+		return errors.New("poll not found")
+	}
+
+	delete(pollStore, pollID)
+	return nil
+}

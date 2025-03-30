@@ -60,6 +60,36 @@ func VoteHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeJSON(w, text)
+	case "close":
+		if len(args) < 2 {
+			writeJSON(w, "Usage: /vote close <pollID>")
+			return
+		}
+
+		pollID := args[1]
+
+		err := service.ClosePoll(userID, pollID)
+		if err != nil {
+			writeJSON(w, fmt.Sprintf("Failed to close poll: %s", err))
+			return
+		}
+
+		writeJSON(w, "Poll successfully closed.")
+	case "delete":
+		if len(args) < 2 {
+			writeJSON(w, "Usage: /vote delete <pollID>")
+			return
+		}
+
+		pollID := args[1]
+
+		err := service.DeletePoll(userID, pollID)
+		if err != nil {
+			writeJSON(w, fmt.Sprintf("Failed to delete poll: %s", err))
+			return
+		}
+
+		writeJSON(w, "Poll successfully deleted.")
 	default:
 		writeJSON(w, "Unknown command")
 	}
